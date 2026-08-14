@@ -89,49 +89,44 @@ class SentryPlugin(Plugin):
         """Set a function that extracts user info from request."""
         self._user_getter = user_getter
     
-    async def on_startup(self, app) -> None:
-        """Startup: initialize Sentry SDK if DSN is set."""
+    def setup(self, app) -> None:
+        """Setup: store app reference, initialize Sentry SDK, register middleware."""
         self._app = app
-        
-        if not self.is_enabled:
-            return
 
-        sentry_sdk.init(
-            dsn=self.config.dsn,
-            environment=self.config.environment,
-            release=self.config.release,
-            debug=self.config.debug,
-            sample_rate=self.config.sample_rate,
-            traces_sample_rate=self.config.traces_sample_rate,
-            send_default_pii=self.config.send_default_pii,
-            max_request_body_size=self.config.max_request_body_size,
-            before_send=self.config.before_send,
-            before_send_transaction=self.config.before_send_transaction,
-            integrations=[
-                LoggingIntegration(
-                    level=None,
-                    event_level=None,
-                ),
-                ThreadingIntegration(),
-            ],
-        )
-        
+        if self.is_enabled:
+            sentry_sdk.init(
+                dsn=self.config.dsn,
+                environment=self.config.environment,
+                release=self.config.release,
+                debug=self.config.debug,
+                sample_rate=self.config.sample_rate,
+                traces_sample_rate=self.config.traces_sample_rate,
+                send_default_pii=self.config.send_default_pii,
+                max_request_body_size=self.config.max_request_body_size,
+                before_send=self.config.before_send,
+                before_send_transaction=self.config.before_send_transaction,
+                integrations=[
+                    LoggingIntegration(
+                        level=None,
+                        event_level=None,
+                    ),
+                    ThreadingIntegration(),
+                ],
+            )
+
+            for key, value in self.config.default_tags.items():
+                sentry_sdk.set_tag(key, value)
+
+            sentry_sdk.set_tag("framework", "Flaxon")
+            sentry_sdk.set_tag("framework_version", getattr(app, "version", "0.1.0"))
+
         app.state.sentry_plugin = self
-        
-        for key, value in self.config.default_tags.items():
-            sentry_sdk.set_tag(key, value)
-            
-        sentry_sdk.set_tag("framework", "Flaxon")
-        sentry_sdk.set_tag("framework_version", getattr(app, "version", "0.1.0"))
-    
-    async def on_shutdown(self, app) -> None:
+        app.add_middleware(SentryMiddleware, plugin_instance=self)
+
+    def on_shutdown(self) -> None:
         """Shutdown: flush pending events."""
         if self.is_enabled:
             sentry_sdk.flush(timeout=2.0)
-    
-    def add_middleware(self, app) -> Callable:
-        """Add Sentry middleware to the app."""
-        return SentryMiddleware(app, self)
     
     def capture_exception(
         self, 

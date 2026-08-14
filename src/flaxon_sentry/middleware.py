@@ -36,7 +36,11 @@ class SentryMiddleware:
                 op="http.server",
                 sampled=self.config.traces_sample_rate,
             ):
-                request = scope.get("flaxon_request")
+                # Middleware runs before Flaxon's own routing/Request creation,
+                # so there's no request object waiting in scope yet -- build a
+                # lightweight one directly from scope/receive instead.
+                from flaxon.http import Request
+                request = Request(scope, receive, None)
                 
                 if self.config.attach_request_context and request:
                     from .context import build_request_context

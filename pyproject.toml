@@ -13,7 +13,7 @@ authors = [
 license = {text = "MIT"}
 requires-python = ">=3.11"
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
@@ -35,9 +35,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/aldanedev-create/flaxon-sentry.git"
-Repository = "https://github.com/aldanedev-create/flaxon-sentry.git"
-Issues = "https://github.com/aldanedev-create/flaxon-sentry/issues.git"
+Homepage = "https://github.com/aldanedev-create/flaxon-sentry"
+Repository = "https://github.com/aldanedev-create/flaxon-sentry"
+Issues = "https://github.com/aldanedev-create/flaxon-sentry/issues"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
