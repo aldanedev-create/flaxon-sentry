@@ -9,8 +9,8 @@ import os
 class SentryConfig:
     """Configuration for Sentry integration."""
     
-    # Required
-    dsn: str
+    # DSN (Optional in dev/test)
+    dsn: str = ""
     
     # Environment
     environment: Optional[str] = None
@@ -57,13 +57,7 @@ class SentryConfig:
     
     def validate(self) -> None:
         """Validate configuration."""
-        if not self.dsn:
-            raise ValueError(
-                "Sentry DSN is required. Set SENTRY_DSN environment variable "
-                "or pass dsn to SentryPlugin."
-            )
-        
-        if not self.dsn.startswith(("http://", "https://")):
+        if self.dsn and not self.dsn.startswith(("http://", "https://")):
             raise ValueError("Invalid Sentry DSN format. Must start with http:// or https://")
         
         if not (0.0 <= self.sample_rate <= 1.0):

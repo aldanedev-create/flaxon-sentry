@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "flaxon-sentry"
-version = "0.1.0"
+version = "0.1.1"
 description = "Sentry integration plugin for Flaxon framework"
 readme = "README.md"
 authors = [
@@ -22,7 +22,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "flaxon>=0.1.7",
+    "flaxon>=0.1.8",
     "sentry-sdk>=2.0.0",
 ]
 

@@ -1,15 +1,11 @@
 """Build Sentry context from Flaxon request objects."""
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Callable
 from flaxon.http import Request
 
 
 def build_request_context(request: Request) -> Dict[str, Any]:
-    """
-    Build Sentry context from a Flaxon Request object.
-    
-    Returns a dict suitable for sentry_sdk.set_context().
-    """
+    """Build Sentry context from a Flaxon Request object."""
     context = {
         "method": request.method,
         "path": request.path,
@@ -21,7 +17,6 @@ def build_request_context(request: Request) -> Dict[str, Any]:
         },
     }
     
-    # Add headers (excluding sensitive ones)
     headers = dict(request.headers)
     sensitive_headers = {
         "authorization", "cookie", "x-api-key", "x-auth-token",
@@ -32,20 +27,14 @@ def build_request_context(request: Request) -> Dict[str, Any]:
         for k, v in headers.items()
     }
     
-    # Add request ID if present
     if hasattr(request, "state") and hasattr(request.state, "request_id"):
         context["request_id"] = request.state.request_id
     
     return context
 
 
-def build_user_context(request: Request, user_getter: Optional[callable] = None) -> Dict[str, Any]:
-    """
-    Build Sentry user context from a Flaxon Request object.
-    
-    If user_getter is provided, it should return a dict with user info.
-    Sentry expects: id, username, email, ip_address
-    """
+def build_user_context(request: Request, user_getter: Optional[Callable] = None) -> Dict[str, Any]:
+    """Build Sentry user context from a Flaxon Request object."""
     if not user_getter:
         return {}
     
@@ -58,10 +47,8 @@ def build_user_context(request: Request, user_getter: Optional[callable] = None)
                 "email": user_data.get("email"),
                 "ip_address": request.client[0] if request.client else None,
             }
-            # Filter out None values
             return {k: v for k, v in user_context.items() if v is not None}
     except Exception:
-        # Don't break request processing if user context fails
         pass
     
     return {}
